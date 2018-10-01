@@ -22,7 +22,7 @@ def get_video_model():
     if no custom model is defined.
     """
     from django.apps import apps
-    model_string = get_image_model_string()
+    model_string = get_video_model_string()
     try:
         return apps.get_model(model_string)
     except ValueError:
