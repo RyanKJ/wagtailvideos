@@ -12,7 +12,7 @@ from wagtail.utils.pagination import paginate
 
 from wagtailvideos import ffmpeg
 from wagtailvideos.forms import VideoTranscodeAdminForm, get_video_form
-from wagtailvideos.models import Video
+from wagtailvideos import get_video_model
 from wagtailvideos.permissions import permission_policy
 
 permission_checker = PermissionPolicyChecker(permission_policy)
@@ -21,6 +21,8 @@ permission_checker = PermissionPolicyChecker(permission_policy)
 @permission_checker.require_any('add', 'change', 'delete')
 @vary_on_headers('X-Requested-With')
 def index(request):
+    Video = get_video_model()
+    
     # Get Videos (filtered by user permission)
     videos = Video.objects.all()
 
@@ -70,6 +72,8 @@ def index(request):
 
 @permission_checker.require('change')
 def edit(request, video_id):
+    Video = get_video_model()
+    
     VideoForm = get_video_form(Video)
     video = get_object_or_404(Video, id=video_id)
 
@@ -124,7 +128,7 @@ def edit(request, video_id):
 def create_transcode(request, video_id):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
-    video = get_object_or_404(Video, id=video_id)
+    video = get_object_or_404(get_video_model(), id=video_id)
     transcode_form = VideoTranscodeAdminForm(data=request.POST, video=video)
 
     if transcode_form.is_valid():
@@ -134,7 +138,7 @@ def create_transcode(request, video_id):
 
 @permission_checker.require('delete')
 def delete(request, video_id):
-    video = get_object_or_404(Video, id=video_id)
+    video = get_object_or_404(get_video_model(), id=video_id)
 
     if request.POST:
         video.delete()
@@ -148,6 +152,7 @@ def delete(request, video_id):
 
 @permission_checker.require('add')
 def add(request):
+    Video = get_video_model()
     VideoForm = get_video_form(Video)
 
     if request.POST:
@@ -178,7 +183,7 @@ def add(request):
 
 
 def usage(request, image_id):
-    image = get_object_or_404(Video, id=image_id)
+    image = get_object_or_404(get_video_model(), id=image_id)
 
     paginator, used_by = paginate(request, image.get_usage())
 
